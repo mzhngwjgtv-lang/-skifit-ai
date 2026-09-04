@@ -159,8 +159,15 @@
 
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium text-slate-300">Ваш вес</span>
-              <span class="text-base font-bold text-cyan-400 tracking-tight font-mono"><span id="weightValue">70</span> кг</span>
+              <div>
+                <span class="text-sm font-medium text-slate-300">Ваш вес</span>
+                <span class="text-[11px] text-slate-500 ml-1.5" id="gearNote">(базовый)</span>
+              </div>
+              <div class="flex items-center space-x-1.5 font-mono">
+                <span class="text-base font-bold text-cyan-400 tracking-tight" id="weightValue">70</span>
+                <span class="text-sm text-cyan-400 font-bold">кг</span>
+                <span id="gearAdditionBadge" class="text-xs text-slate-400 font-normal hidden">(+3 кг экип)</span>
+              </div>
             </div>
             <input 
               id="weightRange" 
@@ -175,41 +182,62 @@
               <span>40 кг</span>
               <span>130 кг</span>
             </div>
+
+            <!-- Переключатель поправки на экипировку -->
+            <div class="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <label for="gearCorrection" class="flex items-center space-x-2.5 cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  id="gearCorrection" 
+                  checked 
+                  class="w-4 h-4 rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-400"
+                >
+                <span class="text-xs text-slate-300 font-medium">Учитывать вес экипировки (+3 кг к весу)</span>
+              </label>
+              <span class="text-[10px] text-slate-500 hidden sm:inline">Ботинки, одежда, крепления</span>
+            </div>
           </div>
 
         </div>
       </section>
 
-      <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
-          <div>
-            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Ростовка лыж</span>
-            <p class="text-xl sm:text-2xl font-bold text-cyan-300 mt-1 font-mono tracking-tight" id="skiLengthResult">
-              185 – 190 см
-            </p>
+      <section class="space-y-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Ростовка лыж</span>
+              <p class="text-xl sm:text-2xl font-bold text-cyan-300 mt-1 font-mono tracking-tight" id="skiLengthResult">
+                185 – 190 см
+              </p>
+            </div>
+            <span class="text-[11px] text-slate-500 mt-2 block" id="skiCalcFormula">Рост + 10...15 см</span>
           </div>
-          <span class="text-[11px] text-slate-500 mt-2 block" id="skiCalcFormula">Рост + 10...15 см</span>
+
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Длина палок</span>
+              <p class="text-xl sm:text-2xl font-bold text-sky-400 mt-1 font-mono tracking-tight" id="polesLengthResult">
+                158 см
+              </p>
+            </div>
+            <span class="text-[11px] text-slate-500 mt-2 block" id="poleCalcFormula">Рост × 0.90</span>
+          </div>
+
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Жесткость (Flex)</span>
+              <p class="text-base sm:text-lg font-bold text-slate-100 mt-1 leading-tight tracking-tight" id="flexResult">
+                Medium
+              </p>
+            </div>
+            <span class="text-[11px] text-slate-400 mt-2 block" id="flexDescription">Универсальная</span>
+          </div>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
-          <div>
-            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Длина палок</span>
-            <p class="text-xl sm:text-2xl font-bold text-sky-400 mt-1 font-mono tracking-tight" id="polesLengthResult">
-              158 см
-            </p>
-          </div>
-          <span class="text-[11px] text-slate-500 mt-2 block" id="poleCalcFormula">Рост × 0.90</span>
-        </div>
-
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
-          <div>
-            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Жесткость (Flex)</span>
-            <p class="text-base sm:text-lg font-bold text-slate-100 mt-1 leading-tight tracking-tight" id="flexResult">
-              Medium
-            </p>
-          </div>
-          <span class="text-[11px] text-slate-400 mt-2 block" id="flexDescription">Универсальная</span>
-        </div>
+        <!-- Юридический дисклеймер -->
+        <p class="text-[11px] text-slate-500 px-2 text-center sm:text-left leading-relaxed">
+          * Расчет носит рекомендательный характер для подготовленных трасс. Точный эпюр прогиба и жесткость подтверждаются сервисным мастером перед установкой креплений.
+        </p>
       </section>
 
       <section class="bg-gradient-to-b from-slate-900 to-slate-950 border border-cyan-500/20 rounded-2xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
@@ -309,6 +337,9 @@
     const weightRange = document.getElementById('weightRange');
     const heightValue = document.getElementById('heightValue');
     const weightValue = document.getElementById('weightValue');
+    const gearCorrection = document.getElementById('gearCorrection');
+    const gearAdditionBadge = document.getElementById('gearAdditionBadge');
+    const gearNote = document.getElementById('gearNote');
     const styleRadios = document.getElementsByName('skiStyle');
 
     const skiLengthResult = document.getElementById('skiLengthResult');
@@ -342,10 +373,22 @@
     // Главная функция расчета
     function calculate() {
       const height = parseInt(heightRange.value, 10);
-      const weight = parseInt(weightRange.value, 10);
+      const baseWeight = parseInt(weightRange.value, 10);
+      const hasGear = gearCorrection.checked;
+
+      // Эффективный расчетный вес (+3 кг экипировки при активном чекбоксе)
+      const effectiveWeight = hasGear ? (baseWeight + 3) : baseWeight;
 
       heightValue.textContent = height;
-      weightValue.textContent = weight;
+      weightValue.textContent = baseWeight;
+
+      if (hasGear) {
+        gearAdditionBadge.classList.remove('hidden');
+        gearNote.textContent = '(в экипе: ' + effectiveWeight + ' кг)';
+      } else {
+        gearAdditionBadge.classList.add('hidden');
+        gearNote.textContent = '(базовый)';
+      }
 
       let selectedStyle = 'skate';
       for (const radio of styleRadios) {
@@ -383,21 +426,28 @@
       skiCalcFormula.textContent = skiFormulaText;
       poleCalcFormula.textContent = poleFormulaText;
 
-      // 2. Расчет жесткости колодки под вес
-      if (weight <= 60) {
+      // 2. Расчет жесткости колодки под эффективный вес с учетом пограничных зон
+      if (effectiveWeight < 64) {
         flexResult.textContent = 'Soft';
-        flexDescription.textContent = 'Мягкая колодка';
-      } else if (weight <= 85) {
+        flexDescription.textContent = 'Мягкая колодка (до 65 кг)';
+      } else if (effectiveWeight >= 64 && effectiveWeight <= 66) {
+        flexResult.textContent = 'Soft / Medium';
+        flexDescription.textContent = 'Пограничный вес (рекомендуем тест)';
+      } else if (effectiveWeight > 66 && effectiveWeight < 84) {
         flexResult.textContent = 'Medium';
-        flexDescription.textContent = 'Универсальная';
+        flexDescription.textContent = 'Универсальная (66–85 кг)';
+      } else if (effectiveWeight >= 84 && effectiveWeight <= 86) {
+        flexResult.textContent = 'Medium / Stiff';
+        flexDescription.textContent = 'Пограничный вес (рекомендуем тест)';
       } else {
         flexResult.textContent = 'Stiff / Hard';
-        flexDescription.textContent = 'Жесткая колодка';
+        flexDescription.textContent = 'Усиленная жесткость (85+ кг)';
       }
     }
 
     heightRange.addEventListener('input', calculate);
     weightRange.addEventListener('input', calculate);
+    gearCorrection.addEventListener('change', calculate);
     styleRadios.forEach(radio => radio.addEventListener('change', calculate));
 
     calculate();
