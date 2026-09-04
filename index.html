@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkiFit AI — Подбор лыжной экипировки</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cyan: '#06b6d4',
+              cyanHover: '#0891b2',
+              glow: 'rgba(6, 182, 212, 0.35)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Кастомизация range-инпутов для аккуратного dark-style */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: pointer;
+      margin-top: -7px;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.75);
+      border: 2px solid #0f172a;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #334155;
+      border-radius: 9999px;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.75);
+      border: 2px solid #0f172a;
+    }
+    input[type=range]::-moz-range-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #334155;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-cyan-500 selection:text-slate-950 antialiased relative overflow-x-hidden">
+
+  <!-- Фоновые декоративные свечения -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-0 right-0 w-[400px] h-[400px] bg-sky-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- Toast Уведомление -->
+  <div id="toast" class="fixed top-6 right-6 z-50 transform translate-y-[-150%] opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-[calc(100%-3rem)] sm:w-auto">
+    <div class="bg-slate-900/95 border border-cyan-500/40 text-slate-100 px-5 py-4 rounded-xl shadow-2xl backdrop-blur-md flex items-start space-x-3">
+      <div class="text-cyan-400 mt-0.5 shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="text-sm font-medium leading-relaxed" id="toastMessage"></div>
+    </div>
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 py-8 sm:py-12 mb-20">
+    
+    <!-- 1. Хедер с логотипом -->
+    <header class="text-center mb-8 sm:mb-10">
+      <div class="inline-flex items-center justify-center space-x-3 mb-3">
+        <img 
+          src="https://i.ibb.co/M5NZcbkj/minimalist-vector-logo-for-ski-fitting-service-nam-1.png" 
+          alt="SkiFit AI Logo" 
+          class="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-xl p-1 bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+        >
+        <span class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
+          SkiFit AI
+        </span>
+        <span class="text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+          MVP v1.0
+        </span>
+      </div>
+      <p class="text-slate-400 text-sm sm:text-base font-normal max-w-md mx-auto">
+        Точный подбор ростовки и жесткости лыж за 5 секунд
+      </p>
+    </header>
+
+    <main class="space-y-6">
+
+      <!-- 2. Блок калькулятора с баннером -->
+      <section class="bg-slate-900/80 border border-slate-800 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
+        <div class="relative w-full h-44 sm:h-56 bg-slate-950 overflow-hidden border-b border-slate-800">
+          <img 
+            src="https://i.ibb.co/pBxS2X3W/Gemini-Generated-Image-s92i3ps92i3ps92i-1-2.jpg" 
+            alt="SkiFit AI Banner" 
+            class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700 opacity-90"
+          >
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent pointer-events-none"></div>
+        </div>
+
+        <div class="p-5 sm:p-7 space-y-6">
+
+          <!-- Стиль катания -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              Стиль катания
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <label class="relative flex items-center justify-center p-3 rounded-xl border cursor-pointer select-none transition-all duration-150 border-slate-700 bg-slate-800/60 hover:bg-slate-800 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-500/15 has-[:checked]:text-cyan-300 text-slate-300 text-xs sm:text-sm font-semibold">
+                <input type="radio" name="skiStyle" value="skate" checked class="sr-only">
+                <span>Коньковый ход</span>
+              </label>
+
+              <label class="relative flex items-center justify-center p-3 rounded-xl border cursor-pointer select-none transition-all duration-150 border-slate-700 bg-slate-800/60 hover:bg-slate-800 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-500/15 has-[:checked]:text-cyan-300 text-slate-300 text-xs sm:text-sm font-semibold">
+                <input type="radio" name="skiStyle" value="classic" class="sr-only">
+                <span>Классический ход</span>
+              </label>
+
+              <label class="relative flex items-center justify-center p-3 rounded-xl border cursor-pointer select-none transition-all duration-150 border-slate-700 bg-slate-800/60 hover:bg-slate-800 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-500/15 has-[:checked]:text-cyan-300 text-slate-300 text-xs sm:text-sm font-semibold">
+                <input type="radio" name="skiStyle" value="alpine" class="sr-only">
+                <span>Горные лыжи</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Ползунок: Рост -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-slate-300">Ваш рост</span>
+              <span class="text-base font-bold text-cyan-400 tracking-tight font-mono"><span id="heightValue">175</span> см</span>
+            </div>
+            <input 
+              id="heightRange" 
+              type="range" 
+              min="140" 
+              max="215" 
+              step="1" 
+              value="175" 
+              class="w-full"
+            >
+            <div class="flex justify-between text-[11px] text-slate-500 font-medium mt-1">
+              <span>140 см</span>
+              <span>215 см</span>
+            </div>
+          </div>
+
+          <!-- Ползунок: Вес -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-slate-300">Ваш вес</span>
+              <span class="text-base font-bold text-cyan-400 tracking-tight font-mono"><span id="weightValue">70</span> кг</span>
+            </div>
+            <input 
+              id="weightRange" 
+              type="range" 
+              min="40" 
+              max="130" 
+              step="1" 
+              value="70" 
+              class="w-full"
+            >
+            <div class="flex justify-between text-[11px] text-slate-500 font-medium mt-1">
+              <span>40 кг</span>
+              <span>130 кг</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 3. Блок динамических результатов -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Длина лыж -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Ростовка лыж</span>
+            <p class="text-xl sm:text-2xl font-bold text-cyan-300 mt-1 font-mono tracking-tight" id="skiLengthResult">
+              185 – 190 см
+            </p>
+          </div>
+          <span class="text-[11px] text-slate-500 mt-2 block" id="skiCalcFormula">Рост + 10...15 см</span>
+        </div>
+
+        <!-- Длина палок -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Длина палок</span>
+            <p class="text-xl sm:text-2xl font-bold text-sky-400 mt-1 font-mono tracking-tight" id="polesLengthResult">
+              158 см
+            </p>
+          </div>
+          <span class="text-[11px] text-slate-500 mt-2 block" id="poleCalcFormula">Рост × 0.90</span>
+        </div>
+
+        <!-- Жесткость колодки -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Жесткость (Flex)</span>
+            <p class="text-base sm:text-lg font-bold text-slate-100 mt-1 leading-tight tracking-tight" id="flexResult">
+              Medium
+            </p>
+          </div>
+          <span class="text-[11px] text-slate-400 mt-2 block" id="flexDescription">Универсальная</span>
+        </div>
+      </section>
+
+      <!-- 4. Форма захвата заявки -->
+      <section class="bg-gradient-to-b from-slate-900 to-slate-950 border border-cyan-500/20 rounded-2xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <h3 class="text-sm sm:text-base font-semibold text-slate-100 mb-4 leading-snug">
+          Получить персональную подборку 3 лучших моделей под ваши параметры со <span class="text-cyan-400">скидкой 15%</span>
+        </h3>
+
+        <form id="leadForm" class="space-y-3 sm:space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <input 
+                type="text" 
+                id="userName" 
+                required 
+                placeholder="Ваше имя" 
+                class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+              >
+            </div>
+            <div>
+              <input 
+                type="text" 
+                id="userContact" 
+                required 
+                placeholder="Telegram (@username) или Телефон" 
+                class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+              >
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full py-3 px-6 rounded-xl font-bold text-sm tracking-wide text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 active:scale-[0.99] transition duration-150 shadow-[0_0_20px_rgba(6,182,212,0.35)] cursor-pointer flex items-center justify-center space-x-2"
+          >
+            <span>Получить подборку в Telegram</span>
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+          </button>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 5. Плавающий круглый AI-консультант в правом нижнем углу -->
+  <div class="fixed bottom-5 right-5 z-50">
+    
+    <!-- Всплывающее окно чата -->
+    <div 
+      id="chatPopup" 
+      class="hidden flex-col mb-4 w-[92vw] sm:w-[380px] h-[540px] bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300 origin-bottom-right"
+    >
+      <!-- Шапка чата -->
+      <div class="px-4 py-3 bg-slate-800/80 border-b border-slate-700/80 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-full overflow-hidden border border-cyan-400/50 shadow-sm shrink-0">
+            <img 
+              src="https://functions.pro-talk.ru/api/v1.0/get_file?file_path=static/dialogs/user_avatars/rechXXIWs3W05qy5x_avatar.png" 
+              alt="AI Consultant" 
+              class="w-full h-full object-cover"
+              onerror="this.src='https://i.ibb.co/M5NZcbkj/minimalist-vector-logo-for-ski-fitting-service-nam-1.png'"
+            >
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-100 leading-tight">AI-Консультант</div>
+            <div class="flex items-center space-x-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-[10px] text-slate-400">Онлайн</span>
+            </div>
+          </div>
+        </div>
+        <button 
+          id="closeChatBtn" 
+          type="button"
+          class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50 transition cursor-pointer"
+          title="Свернуть"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Iframe диалога -->
+      <div class="flex-1 w-full bg-slate-950">
+        <iframe 
+          allow="microphone;autoplay" 
+          class="w-full h-full border-0" 
+          src="https://functions.pro-talk.ru/api/v1.0/chatgpt_widget_dialog_api?record_id=rechXXIWs3W05qy5x&promt_id=72803&lang=ru&fullscreen=0&voice=1&prod=1&file=1">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Круглая кнопка-аватар -->
+    <button 
+      id="chatToggleBtn" 
+      type="button"
+      class="group relative w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full p-1 bg-gradient-to-tr from-cyan-500 to-sky-400 shadow-[0_0_25px_rgba(6,182,212,0.45)] hover:shadow-[0_0_30px_rgba(6,182,212,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none flex items-center justify-center cursor-pointer ml-auto"
+    >
+      <div class="w-full h-full rounded-full overflow-hidden border-2 border-slate-950 bg-slate-900 relative">
+        <img 
+          src="https://functions.pro-talk.ru/api/v1.0/get_file?file_path=static/dialogs/user_avatars/rechXXIWs3W05qy5x_avatar.png" 
+          alt="Ski Fit Bot" 
+          class="w-full h-full object-cover"
+          onerror="this.src='https://i.ibb.co/M5NZcbkj/minimalist-vector-logo-for-ski-fitting-service-nam-1.png'"
+        >
+      </div>
+      <!-- Индикатор онлайна -->
+      <span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-950 rounded-full shadow"></span>
+    </button>
+
+  </div>
+
+  <script>
+    // Инициализация элементов DOM
+    const heightRange = document.getElementById('heightRange');
+    const weightRange = document.getElementById('weightRange');
+    const heightValue = document.getElementById('heightValue');
+    const weightValue = document.getElementById('weightValue');
+    const styleRadios = document.getElementsByName('skiStyle');
+
+    const skiLengthResult = document.getElementById('skiLengthResult');
+    const polesLengthResult = document.getElementById('polesLengthResult');
+    const flexResult = document.getElementById('flexResult');
+    const flexDescription = document.getElementById('flexDescription');
+    const skiCalcFormula = document.getElementById('skiCalcFormula');
+    const poleCalcFormula = document.getElementById('poleCalcFormula');
+
+    const leadForm = document.getElementById('leadForm');
+    const userName = document.getElementById('userName');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    const chatToggleBtn = document.getElementById('chatToggleBtn');
+    const closeChatBtn = document.getElementById('closeChatBtn');
+    const chatPopup = document.getElementById('chatPopup');
+
+    let toastTimeout = null;
+
+    // Открытие/закрытие круглого виджета
+    chatToggleBtn.addEventListener('click', () => {
+      const isHidden = chatPopup.classList.contains('hidden');
+      if (isHidden) {
+        chatPopup.classList.remove('hidden');
+        chatPopup.classList.add('flex');
+      } else {
+        chatPopup.classList.add('hidden');
+        chatPopup.classList.remove('flex');
+      }
+    });
+
+    closeChatBtn.addEventListener('click', () => {
+      chatPopup.classList.add('hidden');
+      chatPopup.classList.remove('flex');
+    });
+
+    // Главная функция расчета
+    function calculate() {
+      const height = parseInt(heightRange.value, 10);
+      const weight = parseInt(weightRange.value, 10);
+
+      heightValue.textContent = height;
+      weightValue.textContent = weight;
+
+      let selectedStyle = 'skate';
+      for (const radio of styleRadios) {
+        if (radio.checked) {
+          selectedStyle = radio.value;
+          break;
+        }
+      }
+
+      // 1. Расчет ростовки и палок
+      let skiMin, skiMax, poleLen, skiFormulaText, poleFormulaText;
+
+      if (selectedStyle === 'skate') {
+        skiMin = height + 10;
+        skiMax = height + 15;
+        poleLen = Math.round(height * 0.90);
+        skiFormulaText = 'Рост + 10...15 см';
+        poleFormulaText = 'Рост × 0.90';
+      } else if (selectedStyle === 'classic') {
+        skiMin = height + 20;
+        skiMax = height + 25;
+        poleLen = Math.round(height * 0.83);
+        skiFormulaText = 'Рост + 20...25 см';
+        poleFormulaText = 'Рост × 0.83';
+      } else { // alpine
+        skiMin = height - 15;
+        skiMax = height - 5;
+        poleLen = Math.round(height * 0.70);
+        skiFormulaText = 'Рост - 5...15 см';
+        poleFormulaText = 'Рост × 0.70';
+      }
+
+      skiLengthResult.textContent = `${skiMin} – ${skiMax} см`;
+      polesLengthResult.textContent = `${poleLen} см`;
+      skiCalcFormula.textContent = skiFormulaText;
+      poleCalcFormula.textContent = poleFormulaText;
+
+      // 2. Расчет жесткости колодки под вес
+      if (weight <= 60) {
+        flexResult.textContent = 'Soft';
+        flexDescription.textContent = 'Мягкая колодка';
+      } else if (weight <= 85) {
+        flexResult.textContent = 'Medium';
+        flexDescription.textContent = 'Универсальная';
+      } else {
+        flexResult.textContent = 'Stiff / Hard';
+        flexDescription.textContent = 'Жесткая колодка';
+      }
+    }
+
+    heightRange.addEventListener('input', calculate);
+    weightRange.addEventListener('input', calculate);
+    styleRadios.forEach(radio => radio.addEventListener('change', calculate));
+
+    leadForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = userName.value.trim();
+      
+      toastMessage.textContent = `Спасибо, ${name}! Параметры сохранены. Подборка отправлена в Telegram.`;
+      toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-[-150%]', 'opacity-0');
+      }, 4500);
+
+      leadForm.reset();
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
